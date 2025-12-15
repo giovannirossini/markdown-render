@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	"github.com/giovannirossini/markdown-render/render"
 )
 
 func main() {
@@ -14,7 +16,7 @@ func main() {
 			fmt.Fprintf(os.Stderr, "Error reading stdin: %v\n", err)
 			os.Exit(1)
 		}
-		Render(string(content))
+		render.Render(string(content))
 		return
 	}
 
@@ -24,9 +26,9 @@ func main() {
 	content, err := os.ReadFile(input)
 	if err != nil {
 		// Treat as direct markdown input
-		Render(input)
+		render.Render(input)
 		return
 	}
 
-	Render(string(content))
+	render.Render(string(content))
 }

@@ -1,4 +1,4 @@
-module github.com/yourusername/mdrender
+module github.com/giovannirossini/markdown-render
 
 go 1.21
 
