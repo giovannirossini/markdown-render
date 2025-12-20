@@ -97,6 +97,9 @@ func wrapTextWithOffset(text string, currentOffset int) (string, int) {
 
 // Render renders markdown content with ANSI colors
 func Render(content string) {
+	// Force color output even when piped (for use with less -R)
+	color.NoColor = false
+
 	// Parse markdown
 	doc := markdown.Parse([]byte(content), nil)
 
