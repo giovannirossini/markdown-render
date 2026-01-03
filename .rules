@@ -1,0 +1,167 @@
+# Go Production-Ready Code Standards
+
+## Project Context
+This is a production-ready CLI tool for rendering markdown to ANSI-colored terminal output. Code quality, maintainability, and reliability are critical.
+
+## Code Style & Standards
+
+### General Principles
+- Follow [Google Go Style Guide](https://google.github.io/styleguide/go/)
+- Write production-ready code - handle errors, edge cases, and failures gracefully
+- Prioritize clarity and maintainability over cleverness
+- Keep functions small and focused (single responsibility)
+- Prefer composition over inheritance
+- Use meaningful names that reveal intent
+
+### Package Organization
+- Keep packages focused and cohesive
+- Use internal packages for implementation details that shouldn't be exported
+- One package per directory
+- Package names should be lowercase, single-word, and descriptive
+
+### Error Handling
+- Always handle errors explicitly - never ignore them with `_`
+- Use `fmt.Errorf` with `%w` verb for error wrapping to preserve error chain
+- Return errors, don't log them (let the caller decide)
+- Use sentinel errors for expected error conditions
+- Provide context in error messages: "what failed" and "why it failed"
+
+### Testing
+- Write tests in the same package (package render, not package render_test)
+- Test files follow pattern: `source_test.go` or `source_feature_test.go`
+- Use table-driven tests for multiple similar test cases
+- Test both success and failure paths
+- Test edge cases: empty input, nil values, boundary conditions
+- Use descriptive test names: `TestFunctionName_Scenario_ExpectedBehavior`
+- Keep tests focused - one concept per test
+- Prefer `t.Run()` for subtests to organize related tests
+
+### Code Quality
+- Run `go vet` and `gofmt` before committing
+- No unused imports or variables
+- All exported functions, types, and constants must have doc comments
+- Doc comments should start with the name of the thing being described
+- Use `golangci-lint` for additional static analysis (if available)
+
+### Performance
+- Don't optimize prematurely
+- Use `go test -bench` for performance-critical code
+- Prefer `strings.Builder` over string concatenation in loops
+- Be mindful of allocations in hot paths
+
+### Concurrency
+- Use channels for communication, mutexes for state protection
+- Prefer `context.Context` for cancellation and timeouts
+- Always clean up goroutines to prevent leaks
+
+### CLI Best Practices
+- Use proper exit codes (0 for success, non-zero for errors)
+- Write errors to stderr, output to stdout
+- Provide clear, actionable error messages
+- Support common flags: `-h/--help`, `-v/--version` (if applicable)
+
+### Dependencies
+- Minimize external dependencies
+- Pin dependency versions in go.mod
+- Regularly update dependencies for security patches
+- Use `go mod tidy` to clean up dependencies
+
+### Documentation
+- README.md should explain what, why, and how
+- Code comments explain "why", not "what" (code should be self-documenting)
+- Document exported APIs with examples when helpful
+- Keep comments up-to-date with code changes
+
+### Security
+- Never log sensitive information (passwords, tokens, keys)
+- Validate and sanitize all user input
+- Use `crypto/rand` for random values, never `math/rand` for security
+- Be cautious with file operations - validate paths, check permissions
+
+### Git & Version Control
+- Write clear, descriptive commit messages
+- Keep commits focused and atomic
+- Don't commit generated files or build artifacts
+- Use `.gitignore` appropriately
+
+## When Writing Code
+
+1. **Think production-first**: How will this fail in production? Handle it.
+2. **Test your changes**: Write tests for new functionality
+3. **Check for errors**: Every function that can fail should return an error
+4. **Document exports**: All public APIs need doc comments
+5. **Keep it simple**: Prefer straightforward solutions over clever ones
+6. **Review edge cases**: Empty strings, nil pointers, zero values, large inputs
+
+## Code Review Checklist
+
+- [ ] All errors are handled
+- [ ] Tests cover new functionality
+- [ ] No unused imports or variables
+- [ ] Code follows Go idioms
+- [ ] Exported symbols have doc comments
+- [ ] No hardcoded values (use constants)
+- [ ] Functions are focused and testable
+- [ ] No race conditions or data races
+- [ ] Proper error messages with context
+
+## Testing Standards
+
+- Aim for >80% code coverage on critical paths
+- Test both happy paths and error cases
+- Use table-driven tests for similar scenarios
+- Integration tests for CLI behavior
+- Unit tests for individual functions
+- Test edge cases: empty, nil, zero, max values
+
+## File Organization
+
+- `main.go` - CLI entry point
+- `render/` - Core rendering package
+- `*_test.go` - Test files in same package
+- Keep related code together
+- Separate concerns into different files when files get large (>500 lines)
+
+## Common Patterns to Follow
+
+```go
+// Good: Error handling with context
+if err != nil {
+    return fmt.Errorf("failed to read file %q: %w", filename, err)
+}
+
+// Good: Table-driven test
+func TestFunction(t *testing.T) {
+    tests := []struct {
+        name string
+        input string
+        want string
+    }{
+        {"case1", "input", "expected"},
+    }
+    for _, tt := range tests {
+        t.Run(tt.name, func(t *testing.T) {
+            // test
+        })
+    }
+}
+
+// Good: Clear function names
+func calculateTableColumnWidths() { }
+func renderTable() string { }
+
+// Good: Exported with doc comment
+// RenderToString renders markdown content with ANSI colors and returns the string.
+func RenderToString(content string) string { }
+```
+
+## Anti-Patterns to Avoid
+
+- Ignoring errors: `_ = doSomething()`
+- Generic error messages: `return errors.New("error")`
+- Unnecessary complexity
+- Premature optimization
+- Testing implementation details instead of behavior
+- Exposing internal implementation details
+- Using `panic` for expected errors
+- Global state when avoidable
